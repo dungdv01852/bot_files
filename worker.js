@@ -8,32 +8,52 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-
-//https://api.telegram.org/bot7053152705:AAEJfD9AB0hqlj6hPPVP1VoTkAyvi1RM_Ds/setWebhook?url=https://telegram.mb55p2g2dd.workers.dev/
-
-import { botAnswer, botUrl } from './data.js'
+const BOT_TOKEN = 'Nhập mã token của Telegram ở đây'
 
 export default {
-  async fetch(request, env, ctx) {
-      if (request.method === "POST") {
-          const payload = await request.json();
-          if ('message' in payload) {
-              const chatId = payload.message.chat.id;
-              const text = payload.message.text;
-              let response
-              if(text != '#ai' && text != '#chatbot'){
-                response = encodeURIComponent(botAnswer)
-              }else{
-                response = encodeURIComponent(botUrl)
-              }
-              await this.sendMessage(env.API_KEY, chatId, response);
-          }
-      }
-      return new Response('OK');
-  },
+    async fetch(request, env, ctx) {
+        if (request.method === "POST") {
+            const payload = await request.json();
 
-  async sendMessage(apiKey, chatId, text) {
-      const url = `https://api.telegram.org/bot${apiKey}/sendMessage?chat_id=${chatId}&text=${text}`;
-      const data = await fetch(url).then(resp => resp.json());
-  }
+            if ('message' in payload) {
+                const chatId = payload.message.chat.id;
+                const text = payload.message.text;
+                let response
+                if (text === '/start') {
+                    response = {
+                        chat_id: chatId,
+                        photo: 'https://www.ixbt.com/img/n1/news/2022/3/1/62342d1404eb2_large.jpg',
+                        caption: `📣 Welcome  $YES Coin Early Access Program \n ✅  Listing Information on Pancake Swap Coming soon at UTC+0 15:00:00 on July 28, 2024. \n🎁 Invite your friends and start earning together! 💰`,
+                        reply_markup: JSON.stringify({
+                            inline_keyboard: [
+                                [{
+                                    text: "🕹️ Play game now", web_app: {
+                                        url: "https://ltclipo.com/game.php"
+                                    }
+                                }],
+                                [{ text: "Create account", url: "https://ltclipo.com/register.php" }],
+                                [{ text: "Contact us", url: "https://ltclipo.com/contacts.php" }],
+                                [{ text: "FAG", url: "https://ltclipo.com/#faq" }]
+                            ]
+                        })
+                    }
+                    await this.sendMessageWithButton(response);
+                }
+            }
+        }
+        return new Response('OK');
+    },
+
+    async sendMessageWithButton(payload) {
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+
+        const data = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).then(resp => console.log(resp.json()))
+            .catch(error => console.log('error', error));
+    }
 };
